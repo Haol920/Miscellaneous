@@ -1,0 +1,171 @@
+--// Decompiled Code.
+--!strict
+local HttpService = game:GetService("HttpService")
+
+local getgenv: () -> ({[string]: any}) = getfenv().getgenv
+
+local PlaceName: string = getgenv().PlaceName
+
+local getexecutorname = getfenv().getexecutorname
+local identifyexecutor: () -> (string) = getfenv().identifyexecutor
+local request: ({Url: string, Body: any, Method: string, Headers: {["Content-Type"]: string}?}) -> ({Body: string}) = getfenv().request
+local gethwid: () -> string = getfenv().gethwid
+local isfunctionhooked: ((any) -> any) -> boolean = getfenv().isfunctionhooked
+
+local function FormatField(Name: string, Value: string)
+    return {name = Name, value = Value, inline = true}
+end
+
+local function FormatColor(Color: Color3)
+    return tonumber("0x"..Color:ToHex())
+end
+
+if not gethwid and request then
+    gethwid = function()
+        local Fingerprint = ""
+
+        local Body = request({Url = 'https://httpbin.org/get'; Method = 'GET'}).Body
+        local Decoded = HttpService:JSONDecode(Body)
+
+        for i,v in Decoded.headers do
+            if i:lower():find("fingerprint") then
+                Fingerprint = v
+                break
+            end
+        end
+        
+        return Fingerprint
+    end
+end
+
+local Fingerprint = gethwid()
+
+local function SendWebhook(Info: {Username: string, Url: string, Color: Color3, Fields: any})
+    if not request then
+        return
+    end
+    
+    if isfunctionhooked and isfunctionhooked(request) then
+        return
+    end
+    
+    local Fields = Info.Fields
+    
+    if not Fields then
+        Fields = {}
+    end
+    
+    table.insert(Fields, FormatField("Script Version", getgenv().ScriptVersion))
+    table.insert(Fields, FormatField("Executor", if getexecutorname then getexecutorname() else identifyexecutor()))
+    table.insert(Fields, FormatField("Identifier", Fingerprint))
+    table.insert(Fields, FormatField("Platform", game:GetService("UserInputService"):GetPlatform().Name))
+
+    local Data = {
+        username = Info.Username,
+        avatar_url = "https://cdn.discordapp.com/avatars/1322648594506973235/59c76f027ea559310a3e99da0d8bbb47.png?size=4096",
+        embeds = {
+            {
+                title = PlaceName,
+                color = FormatColor(Info.Color),
+                fields = Fields
+            }
+        }
+    }
+
+    return pcall(request, {
+        Url = Info.Url,
+        Body = HttpService:JSONEncode(Data),
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"}
+    })
+end
+
+local CallbackBlacklist = {
+    "attempt to index nil with 'CurrentValue'",
+    "attempt to index nil with 'CurrentOption'",
+    "ServerScriptService.",
+    "ServerStorage",
+    "not enough memory",
+    "invalid argument #1 to 'setfenv' (number expected, got table)",
+    "attempt to index nil with 'get_real_address'"
+}
+
+getgenv().FrostByteStarted = function()
+    SendWebhook({
+        Username = "Executions v5",
+        Url = "https://discord.com/api/webhooks/1349577006810927114/WUQWzOdwHR9DKe5-3uuMqpgGQtWb4QXuVk6WwrztzkpZruYVbSulYYwcMr1OJPUg0_zk",
+        Color = Color3.fromRGB(0, 201, 99)
+    })
+    
+    local ScriptVersion = getgenv().ScriptVersion
+    
+    if ScriptVersion:sub(1, 1) ~= "v" then
+        return
+    end
+    
+    local HandleConnection: (Connection: RBXScriptConnection, Name: string) -> () = getgenv().HandleConnection
+    
+    HandleConnection(game:GetService("LogService").MessageOut:Connect(function(Message: string)
+        if not Message:find("â\x80¢") or not Message:find("Rayfield") then
+            return
+        end
+
+        for _, Blacklisted in CallbackBlacklist do
+            if Message:find(Blacklisted) then
+                return
+            end
+        end
+
+        SendWebhook({
+            Username = "Callback Errors v3",
+            Url = "https://discord.com/api/webhooks/1348782442793930782/xpvcKmwzseCU7bAEkBXR6ReXYQTbMo53zScWVkwj4qqssZWGLAXQ5JbbfnyjzVy3X0JK",
+            Color = Color3.fromRGB(81, 119, 201),
+            Fields = {
+                FormatField("Callback Error", "```"..Message.."```")
+            }
+        })
+    end), "AnalyticsMessageOut")
+end
+
+local LoadstringBlacklist = {
+    "invalid argument #1 to 'setfenv'",
+    ":5: attempt to call a nil value",
+    "invalid argument #1 to 'loadstring' (string expected, got nil)",
+    "CreateTab",
+    "CreateWindow",
+}
+
+getgenv().FrostByteHandleFunction = function(Callback: () -> ())
+    local Success: boolean, Result: string? = pcall(Callback)
+    
+    if Success or not Result then
+        return
+    end
+    
+    if not Result:split(":")[3] then
+        return
+    end
+    
+    for _, Blacklisted in LoadstringBlacklist do
+        if Result:find(Blacklisted) then
+            return
+        end
+    end
+    
+    local ScriptVersion = getgenv().ScriptVersion
+
+    if ScriptVersion:sub(1, 1) ~= "v" then
+        return
+    end
+    
+    task.spawn(error, Result)
+    
+    SendWebhook({
+        Username = "Loadstring Errors v2",
+        Url = "https://discord.com/api/webhooks/1348782420186628256/hAopDA4Wnn7Kg0argMPeF0Tw_5S2iFWaqOXlgextR_yl8fvlkdodnXn1HwT7cUr3087c",
+        Color = Color3.fromRGB(170, 43, 43),
+        Fields = {
+            FormatField("Loadstring Error", "```"..Result.."```")
+        }
+    })
+end
