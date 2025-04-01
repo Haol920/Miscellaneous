@@ -1,4 +1,7 @@
-local webhookURL = "https://discord.com/api/webhooks/1355611443797426216/YOjRzd2m9fYJn2JkgswXp9Ukf2i7w1aRo_raBt5FhIhWmSvffFiEt4QtaPMNiu61OZxt" -- Secure this!
+-- local webhookURL = "https://discord.com/api/webhooks/1355611443797426216/YOjRzd2m9fYJn2JkgswXp9Ukf2i7w1aRo_raBt5FhIhWmSvffFiEt4QtaPMNiu61OZxt" -- Secure this!
+--[[ BackUP - Soluna • Tracker
+- I hesitate that mesmerizer uses discord bot hooker 😭💀
+]]
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 local HttpService = game:GetService("HttpService")
