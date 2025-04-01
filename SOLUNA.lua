@@ -1,5 +1,6 @@
-loadstring(game:HttpGet("https://soluna-script.vercel.app/src/api/tracker.lua",true))()
-
+--[[ loadstring(game:HttpGet("https://soluna-script.vercel.app/src/api/tracker.lua",true))()
+- Once again, mesmerizer, just stop hooking it :]
+]]
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
