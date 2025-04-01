@@ -1,3 +1,4 @@
+-- BackUP - Soluna SilentAIM script • SRC
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
